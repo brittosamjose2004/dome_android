@@ -75,8 +75,8 @@ class MainActivity : AppCompatActivity() {
         // Get signaling server URL from EditText or use default
         // For dev container/Codespace: Use port forwarding or public URL
         // For Android Emulator: ws://10.0.2.2:3000
-        // For Physical Device: ws://YOUR_PUBLIC_URL:3000
-        val signalingServerUrl = "ws://10.0.2.2:3000" // Android emulator (change for physical device)
+        // For Physical Device: wss://YOUR_PUBLIC_URL
+        val signalingServerUrl = "wss://zany-adventure-pj7j4xpp49653r6x7-3000.app.github.dev" // Codespace public URL
         
         webRTCClient = WebRTCClient(
             application = application,
