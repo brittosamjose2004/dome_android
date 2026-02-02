@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './StreamList.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const API_URL = 'https://zany-adventure-pj7j4xpp49653r6x7-3000.app.github.dev';
 
 const StreamList = ({ onSelectStream }) => {
   const [streams, setStreams] = useState([]);

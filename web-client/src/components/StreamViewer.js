@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './StreamViewer.css';
 
-const SIGNALING_SERVER = process.env.REACT_APP_SIGNALING_SERVER || 'ws://localhost:3000';
+const SIGNALING_SERVER = 'wss://zany-adventure-pj7j4xpp49653r6x7-3000.app.github.dev';
 
 const StreamViewer = ({ streamId }) => {
   const videoRef = useRef(null);
@@ -92,11 +92,21 @@ const StreamViewer = ({ streamId }) => {
 
   const handleOffer = async (offer, senderId) => {
     try {
-      // Create RTCPeerConnection
+      // Create RTCPeerConnection with TURN servers
       pcRef.current = new RTCPeerConnection({
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          }
         ]
       });
 
