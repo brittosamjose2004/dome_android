@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.example.webrtcstreamer.app-mergeDebugResources-37:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "/home/codespace/.gradle/caches/transforms-4/991c1dfd0f657cdd3e9e56e6eeb25b4e/transformed/appcompat-1.6.1/res/values-v18/values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}

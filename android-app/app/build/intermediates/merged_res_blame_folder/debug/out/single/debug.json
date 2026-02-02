@@ -1,0 +1,46 @@
+[
+    {
+        "merged": "/home/codespace/.gradle/daemon/8.6/com.example.webrtcstreamer.app-merged_res-39:/layout_activity_main.xml.flat",
+        "source": "/home/codespace/.gradle/daemon/8.6/com.example.webrtcstreamer.app-main-41:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-hdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-xhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-xxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.webrtcstreamer.app-merged_res-39:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "com.example.webrtcstreamer.app-main-41:/mipmap-mdpi/ic_launcher_round.png"
+    }
+]

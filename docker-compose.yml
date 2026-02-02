@@ -1,0 +1,30 @@
+# Docker Compose for WebRTC Streaming Platform
+
+version: '3.8'
+
+services:
+  signaling-server:
+    build: ./signaling-server
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - PUBLIC_URL=http://localhost:3000
+    networks:
+      - webrtc-network
+
+  web-client:
+    build: ./web-client
+    ports:
+      - "3001:80"
+    depends_on:
+      - signaling-server
+    environment:
+      - REACT_APP_SIGNALING_SERVER=ws://localhost:3000
+      - REACT_APP_API_URL=http://localhost:3000
+    networks:
+      - webrtc-network
+
+networks:
+  webrtc-network:
+    driver: bridge

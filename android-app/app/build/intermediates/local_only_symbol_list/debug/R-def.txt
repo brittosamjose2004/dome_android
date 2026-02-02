@@ -1,0 +1,23 @@
+R_DEF: Internal format may change without notice
+local
+id copyUrlButton
+id embedUrlText
+id infoCard
+id localView
+id serverUrlInput
+id serverUrlLayout
+id startButton
+id statusText
+id streamIdText
+id titleText
+id videoCard
+layout activity_main
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+string copy_url
+string server_url_hint
+string start_streaming
+string stop_streaming
+string stream_info
+style Theme.WebRTCStreamer
