@@ -7,18 +7,17 @@ const MEDIASOUP_SERVER = 'https://zany-adventure-pj7j4xpp49653r6x7-3002.app.gith
 function MediasoupViewer({ streamId }) {
   const videoRef = useRef(null);
   const [status, setStatus] = useState('Connecting...');
-  const [socket, setSocket] = useState(null);
-  const [device, setDevice] = useState(null);
-  const [consumer, setConsumer] = useState(null);
 
   useEffect(() => {
     let mounted = true;
     let recvTransport = null;
+    let socketConnection = null;
+    let currentConsumer = null;
 
     const connectToStream = async () => {
       try {
         // Connect to mediasoup server
-        const socketConnection = io(MEDIASOUP_SERVER, {
+        socketConnection = io(MEDIASOUP_SERVER, {
           transports: ['websocket'],
         });
 
@@ -38,7 +37,6 @@ function MediasoupViewer({ streamId }) {
               }
 
               await newDevice.load({ routerRtpCapabilities: response.data });
-              setDevice(newDevice);
 
               // Create receive transport
               socketConnection.emit('createConsumerTransport', async (transportResponse) => {
@@ -91,14 +89,14 @@ function MediasoupViewer({ streamId }) {
 
                   const { id, producerId, kind, rtpParameters } = consumeResponse.data;
 
-                  const newConsumer = await recvTransport.consume({
+                  currentConsumer = await recvTransport.consume({
                     id,
                     producerId,
                     kind,
                     rtpParameters,
                   });
 
-                  const { track } = newConsumer;
+                  const { track } = currentConsumer;
 
                   // Set video element
                   if (videoRef.current && track.kind === 'video') {
@@ -107,8 +105,6 @@ function MediasoupViewer({ streamId }) {
                     await videoRef.current.play();
                     setStatus('Playing');
                   }
-
-                  setConsumer(newConsumer);
 
                   // Resume consumer
                   socketConnection.emit('resumeConsumer', { consumerId: id });
@@ -142,14 +138,14 @@ function MediasoupViewer({ streamId }) {
 
     return () => {
       mounted = false;
-      if (consumer) {
-        consumer.close();
+      if (currentConsumer) {
+        currentConsumer.close();
       }
       if (recvTransport) {
         recvTransport.close();
       }
-      if (socket) {
-        socket.disconnect();
+      if (socketConnection) {
+        socketConnection.disconnect();
       }
     };
   }, [streamId]);

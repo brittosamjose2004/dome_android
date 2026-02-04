@@ -77,6 +77,56 @@ async function createRouter() {
   return router;
 }
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Mediasoup SFU Server</title>
+      <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        h1 { color: #2563eb; }
+        .status { background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .endpoint { background: #f8fafc; padding: 10px; margin: 10px 0; border-left: 4px solid #3b82f6; }
+        code { background: #e2e8f0; padding: 2px 6px; border-radius: 3px; }
+      </style>
+    </head>
+    <body>
+      <h1>🎥 Mediasoup SFU Server</h1>
+      <div class="status">
+        <h2>✅ Server is running</h2>
+        <p><strong>Active Streams:</strong> ${streams.size}</p>
+        <p><strong>Active Producers:</strong> ${producers.size}</p>
+        <p><strong>Active Consumers:</strong> ${consumers.size}</p>
+      </div>
+      
+      <h2>📡 API Endpoints</h2>
+      <div class="endpoint">
+        <strong>GET /api/streams</strong> - List all active streams
+      </div>
+      <div class="endpoint">
+        <strong>GET /api/health</strong> - Server health check
+      </div>
+      
+      <h2>🔌 WebSocket</h2>
+      <p>Socket.IO endpoint available at <code>/socket.io/</code></p>
+      
+      <h2>📱 Usage</h2>
+      <ol>
+        <li>Start Android app with this server URL</li>
+        <li>Open web viewer at your web client URL</li>
+        <li>Stream will appear in viewer automatically</li>
+      </ol>
+      
+      <p style="margin-top: 40px; color: #64748b; text-align: center;">
+        Dome Android WebRTC Streaming Platform
+      </p>
+    </body>
+    </html>
+  `);
+});
+
 // REST API for streams list
 app.get('/api/streams', (req, res) => {
   const streamList = Array.from(streams.values()).map(stream => ({
