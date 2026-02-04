@@ -103,11 +103,11 @@ io.on('connection', (socket) => {
 
   // Get router RTP capabilities
   socket.on('getRouterRtpCapabilities', (callback) => {
-    callback(router.rtpCapabilities);
+    callback({ data: router.rtpCapabilities });
   });
 
-  // Create WebRTC transport
-  socket.on('createTransport', async ({ producing }, callback) => {
+  // Create producer transport (for Android streamer)
+  socket.on('createProducerTransport', async (callback) => {
     try {
       const transport = await router.createWebRtcTransport({
         listenIps: [
@@ -121,37 +121,87 @@ io.on('connection', (socket) => {
         preferUdp: true
       });
 
-      transports.set(socket.id, transport);
+      transports.set(`producer_${socket.id}`, transport);
 
       callback({
-        id: transport.id,
-        iceParameters: transport.iceParameters,
-        iceCandidates: transport.iceCandidates,
-        dtlsParameters: transport.dtlsParameters
+        data: {
+          id: transport.id,
+          iceParameters: transport.iceParameters,
+          iceCandidates: transport.iceCandidates,
+          dtlsParameters: transport.dtlsParameters
+        }
       });
     } catch (error) {
-      console.error('Error creating transport:', error);
+      console.error('Error creating producer transport:', error);
       callback({ error: error.message });
     }
   });
 
-  // Connect transport
-  socket.on('connectTransport', async ({ dtlsParameters }, callback) => {
+  // Create consumer transport (for web viewers)
+  socket.on('createConsumerTransport', async (callback) => {
     try {
-      const transport = transports.get(socket.id);
-      await transport.connect({ dtlsParameters });
-      callback();
+      const transport = await router.createWebRtcTransport({
+        listenIps: [
+          {
+            ip: '0.0.0.0',
+            announcedIp: process.env.ANNOUNCED_IP || '127.0.0.1'
+          }
+        ],
+        enableUdp: true,
+        enableTcp: true,
+        preferUdp: true
+      });
+
+      transports.set(`consumer_${socket.id}`, transport);
+
+      callback({
+        data: {
+          id: transport.id,
+          iceParameters: transport.iceParameters,
+          iceCandidates: transport.iceCandidates,
+          dtlsParameters: transport.dtlsParameters
+        }
+      });
     } catch (error) {
-      console.error('Error connecting transport:', error);
+      console.error('Error creating consumer transport:', error);
+      callback({ error: error.message });
+    }
+  });
+
+  // Connect producer transport
+  socket.on('connectProducerTransport', async ({ transportId, dtlsParameters }, callback) => {
+    try {
+      const transport = transports.get(`producer_${socket.id}`);
+      await transport.connect({ dtlsParameters });
+      callback({ success: true });
+    } catch (error) {
+      console.error('Error connecting producer transport:', error);
+      callback({ error: error.message });
+    }
+  });
+
+  // Connect consumer transport
+  socket.on('connectConsumerTransport', async ({ transportId, dtlsParameters }, callback) => {
+    try {
+      const transport = transports.get(`consumer_${socket.id}`);
+      await transport.connect({ dtlsParameters });
+      callback({ success: true });
+    } catch (error) {
+      console.error('Error connecting consumer transport:', error);
       callback({ error: error.message });
     }
   });
 
   // Produce (stream from Android)
-  socket.on('produce', async ({ kind, rtpParameters, streamId }, callback) => {
+  socket.on('produce', async ({ transportId, kind, rtpParameters }, callback) => {
     try {
-      const transport = transports.get(socket.id);
+      const transport = transports.get(`producer_${socket.id}`);
+      if (!transport) {
+        return callback({ error: 'Transport not found' });
+      }
+
       const producer = await transport.produce({ kind, rtpParameters });
+      const streamId = `stream_${Date.now()}`;
 
       producers.set(producer.id, { producer, socketId: socket.id });
 
@@ -171,9 +221,9 @@ io.on('connection', (socket) => {
       console.log(`Producer created: ${producer.id} for stream: ${streamId}`);
       
       // Notify all clients about new stream
-      io.emit('newStream', { streamId });
+      io.emit('newStream', { streamId, producerId: producer.id });
 
-      callback({ id: producer.id });
+      callback({ data: { id: producer.id, streamId } });
     } catch (error) {
       console.error('Error producing:', error);
       callback({ error: error.message });
@@ -181,39 +231,41 @@ io.on('connection', (socket) => {
   });
 
   // Consume (view on web)
-  socket.on('consume', async ({ streamId, rtpCapabilities }, callback) => {
+  socket.on('consume', async ({ transportId, producerId, rtpCapabilities }, callback) => {
     try {
-      const stream = streams.get(streamId);
-      if (!stream) {
-        return callback({ error: 'Stream not found' });
+      const transport = transports.get(`consumer_${socket.id}`);
+      if (!transport) {
+        return callback({ error: 'Transport not found' });
       }
 
-      const transport = transports.get(socket.id);
-      const consumers = [];
+      // Find the producer
+      const producerData = producers.get(producerId);
+      if (!producerData) {
+        return callback({ error: 'Producer not found' });
+      }
 
-      // Create consumer for each producer in the stream
-      for (const [kind, producer] of stream.producers.entries()) {
-        if (!router.canConsume({ producerId: producer.id, rtpCapabilities })) {
-          continue;
-        }
+      if (!router.canConsume({ producerId, rtpCapabilities })) {
+        return callback({ error: 'Cannot consume' });
+      }
 
-        const consumer = await transport.consume({
-          producerId: producer.id,
-          rtpCapabilities,
-          paused: false
-        });
+      const consumer = await transport.consume({
+        producerId,
+        rtpCapabilities,
+        paused: false
+      });
 
-        consumers.push({
+      consumers.set(consumer.id, { consumer, socketId: socket.id });
+
+      console.log(`Consumer created: ${consumer.id} for producer: ${producerId}`);
+
+      callback({
+        data: {
           id: consumer.id,
+          producerId: producerId,
           kind: consumer.kind,
-          rtpParameters: consumer.rtpParameters,
-          producerId: producer.id
-        });
-
-        stream.consumers.add(socket.id);
-      }
-
-      callback({ consumers });
+          rtpParameters: consumer.rtpParameters
+        }
+      });
     } catch (error) {
       console.error('Error consuming:', error);
       callback({ error: error.message });
@@ -223,10 +275,13 @@ io.on('connection', (socket) => {
   // Resume consumer
   socket.on('resumeConsumer', async ({ consumerId }, callback) => {
     try {
-      // Implementation for resume if needed
-      callback();
+      const consumerData = consumers.get(consumerId);
+      if (consumerData) {
+        await consumerData.consumer.resume();
+      }
+      if (callback) callback({ success: true });
     } catch (error) {
-      callback({ error: error.message });
+      if (callback) callback({ error: error.message });
     }
   });
 
@@ -235,25 +290,39 @@ io.on('connection', (socket) => {
     console.log(`Client disconnected: ${socket.id}`);
     
     // Clean up transports
-    const transport = transports.get(socket.id);
-    if (transport) {
-      transport.close();
-      transports.delete(socket.id);
+    const producerTransport = transports.get(`producer_${socket.id}`);
+    if (producerTransport) {
+      producerTransport.close();
+      transports.delete(`producer_${socket.id}`);
     }
 
-    // Clean up streams if this was a producer
-    for (const [streamId, stream] of streams.entries()) {
-      stream.consumers.delete(socket.id);
-      
-      // Remove stream if no more producers
-      if (stream.consumers.size === 0) {
-        for (const [kind, producer] of stream.producers.entries()) {
-          if (producers.has(producer.id)) {
-            producers.delete(producer.id);
+    const consumerTransport = transports.get(`consumer_${socket.id}`);
+    if (consumerTransport) {
+      consumerTransport.close();
+      transports.delete(`consumer_${socket.id}`);
+    }
+
+    // Clean up producers
+    for (const [producerId, producerData] of producers.entries()) {
+      if (producerData.socketId === socket.id) {
+        producerData.producer.close();
+        producers.delete(producerId);
+        
+        // Remove associated streams
+        for (const [streamId, stream] of streams.entries()) {
+          if (stream.producerId === producerId) {
+            streams.delete(streamId);
+            io.emit('streamEnded', { streamId });
           }
         }
-        streams.delete(streamId);
-        io.emit('streamEnded', { streamId });
+      }
+    }
+
+    // Clean up consumers
+    for (const [consumerId, consumerData] of consumers.entries()) {
+      if (consumerData.socketId === socket.id) {
+        consumerData.consumer.close();
+        consumers.delete(consumerId);
       }
     }
   });

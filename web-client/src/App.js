@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import StreamViewer from './components/StreamViewer';
+import MediasoupViewer from './components/MediasoupViewer';
 import StreamList from './components/StreamList';
 import './App.css';
 
@@ -31,7 +32,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🎥 WebRTC Stream Viewer</h1>
+        <h1>🎥 WebRTC Stream Viewer (Mediasoup SFU)</h1>
         {view === 'viewer' && (
           <button onClick={handleBackToList} className="back-button">
             ← Back to Streams
@@ -43,7 +44,17 @@ function App() {
         {view === 'list' ? (
           <StreamList onSelectStream={handleSelectStream} />
         ) : (
-          <StreamViewer streamId={streamId} />
+          <>
+            <div className="viewer-info">
+              <p>Using mediasoup SFU for reliable streaming</p>
+              <p>Stream ID: <code>{streamId}</code></p>
+            </div>
+            <MediasoupViewer streamId={streamId} />
+            <details style={{marginTop: '2rem'}}>
+              <summary>Legacy WebRTC Viewer (P2P)</summary>
+              <StreamViewer streamId={streamId} />
+            </details>
+          </>
         )}
       </main>
       

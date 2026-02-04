@@ -15,7 +15,6 @@ import java.nio.ByteBuffer
  * Handles: Camera → Encoder → RTP Packager → Network
  */
 class GStreamerPipeline(
-    private val context: Context,
     private val width: Int = 1280,
     private val height: Int = 720,
     private val fps: Int = 30,
@@ -173,13 +172,5 @@ class PipelineBuilder {
     
     fun setFrameRate(rate: Int) = apply {
         fps = rate
-    }
-    
-    fun setBitrate(rate: Int) = apply {
-        bitrate = rate
-    }
-    
-    fun build(context: Context): GStreamerPipeline {
-        return GStreamerPipeline(context, width, height, fps, bitrate)
     }
 }
