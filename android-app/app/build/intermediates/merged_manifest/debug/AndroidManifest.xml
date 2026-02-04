@@ -35,8 +35,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WebRTCStreamer"
         android:usesCleartextTraffic="true" >
+
+        <!-- New GStreamer + Mediasoup Implementation (Recommended) -->
         <activity
-            android:name="com.example.webrtcstreamer.MainActivity"
+            android:name="com.example.webrtcstreamer.StreamActivity"
             android:exported="true"
             android:screenOrientation="portrait" >
             <intent-filter>
@@ -44,6 +46,13 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Legacy P2P WebRTC Implementation -->
+        <activity
+            android:name="com.example.webrtcstreamer.MainActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" >
         </activity>
 
         <service
