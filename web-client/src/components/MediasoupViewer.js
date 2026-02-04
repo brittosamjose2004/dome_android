@@ -124,8 +124,6 @@ function MediasoupViewer({ streamId }) {
         socketConnection.on('error', (error) => {
           setStatus('Error: ' + error);
         });
-
-        setSocket(socketConnection);
       } catch (error) {
         console.error('Connection error:', error);
         setStatus('Error: ' + error.message);
